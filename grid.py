@@ -10,8 +10,10 @@ class Grid:
         self.linhas = altura // tamanho_quadrado
         self.colunas = largura // tamanho_quadrado
         self.posicoes = []
+        self.posicoes_coloridas = []
 
     def get_posicao(self, x, y):
+
         return self.posicoes[x][y]
     
     def set_posicao(self, x, y, cor):
@@ -40,3 +42,13 @@ class Grid:
 
     def get_colunas(self):
         return self.colunas
+    
+    def colorir(self, cor, linha, coluna):
+        
+        self.posicoes[linha][coluna] = cor
+        self.posicoes_coloridas.append((linha, coluna))
+       
+
+
+    def get_posicoes_coloridas(self):
+        return self.posicoes_coloridas
