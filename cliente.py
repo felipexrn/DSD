@@ -1,8 +1,16 @@
 import Pyro4
 import pygame
+import sys
+
+args = sys.argv
+
+server_ip = str(args[1])
+server_port = int(args[2])
+
+print(f"Conectando em {server_ip}:{server_port}")
 
 # Localiza o objeto remoto no servidor de nomes
-ns = Pyro4.locateNS()
+ns = Pyro4.locateNS(host=server_ip, port=server_port)
 uri = ns.lookup("canva")
 
 # Crie um proxy para o objeto remoto
