@@ -5,7 +5,7 @@ from grid import Grid
 daemon = Pyro4.Daemon()
 
 # Instanciar a classe Grid no servidor
-grid = Grid(800, 600, 20)
+grid = Grid(1280, 720, 20)
 uri = daemon.register(grid)
 print(f"{uri}")
 
