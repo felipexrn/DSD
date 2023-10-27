@@ -1,7 +1,7 @@
 import Pyro4
 import pygame
 
-uri = "PYRO:obj_b31a2764e5094953a847e932f896e5e1@localhost:57986"
+uri = "PYRO:obj_ffe3676b73e34c289526fff6f86eeea4@localhost:58300"
 grid = Pyro4.Proxy(uri)
 
 # Inicializa o Pygame
@@ -12,7 +12,9 @@ largura, altura = grid.get_largura(), grid.get_altura()
 tamanho_quadrado = grid.get_tamanho_quadrado()
 
 # Altura da barra de seleção de cores
-altura_barra_cores = 30
+altura_barra_cores = tamanho_quadrado*2
+
+# altura -= altura_barra_cores
 
 # Cria a janela
 janela = pygame.display.set_mode((largura, altura + altura_barra_cores))
