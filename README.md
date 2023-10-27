@@ -10,3 +10,8 @@ python3 -m venv env
 ```Command prompt
 (env) pip install -r requirements.txt
 ```
+
+# Iniciar Servidor de Nomes 
+```Command prompt
+pyro4-ns
+```

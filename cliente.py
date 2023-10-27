@@ -1,8 +1,13 @@
 import Pyro4
 import pygame
 
-uri = "PYRO:obj_ffe3676b73e34c289526fff6f86eeea4@localhost:58300"
+# Localiza o objeto remoto no servidor de nomes
+ns = Pyro4.locateNS()
+uri = ns.lookup("canva")
+
+# Crie um proxy para o objeto remoto
 grid = Pyro4.Proxy(uri)
+print(grid)
 
 # Inicializa o Pygame
 pygame.init()
