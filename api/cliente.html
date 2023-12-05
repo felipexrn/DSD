@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente Web para API Gateway</title>
+</head>
+<body>
+
+    <h2>Cliente PRG</h2>
+    <label for="quantidadeDados">Quantidade:</label>
+    <input type="number" id="quantidadeDados" />
+    <br>
+    <label for="quantidadeLados">Lados:</label>
+    <input type="number" id="quantidadeLados" />
+    <br>
+    <button onclick="rolarDado()">Rolar Dado</button>
+    <p id="resultadoRolagemDado"></p>
+
+    <br>
+
+    <label for="valorModificador">Valor para Modificar:</label>
+    <input type="number" id="valorModificador" />
+    <br>
+    <button onclick="modificarValor()">Modificar Valor</button>
+    <p id="resultadoModificador"></p>
+
+    <script>
+        let resultadoRolagem = 0;
+        function rolarDado() {
+            let quantidadeDados = document.getElementById('quantidadeDados').value;
+            let quantidadeLados = document.getElementById('quantidadeLados').value;
+            
+            // Rota para a API de rolar dado na API Gateway
+            let url = 'http://localhost:5002/rpg_gateway/rolagem_de_dado/';
+            url += quantidadeDados.toString() + '/' + quantidadeLados.toString();
+
+            // Faz uma requisição GET usando XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const resultado = JSON.parse(xhr.responseText);
+                    document.getElementById('resultadoRolagemDado').innerText = '';
+                    resultadoRolagem = 0;
+                    let r = 'Resultado: ';
+                    for (i=0;i<resultado.length;i++) {
+                        r += `${resultado[i].rolagem_de_dado}`;
+                        if (i<resultado.length-1) {
+                            r += ', '
+                        }
+                        else {
+                            r += '\n'
+                        }
+                        resultadoRolagem += resultado[i].rolagem_de_dado;
+                    }
+                    document.getElementById('resultadoRolagemDado').innerText +=
+                        r + `total: ${resultadoRolagem}\n`;
+                }
+                if (xhr.readyState === 4 && xhr.status > 400 && xhr.status < 500) {
+                    document.getElementById('resultadoRolagemDado').innerText =
+                        `parâmentros inválidos: Certifique de selecionar ao menos 1 dado de no mínimo 2 lados.\n`;
+                }
+            };
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
+
+        function modificarValor() {
+            let valorModificador = document.getElementById('valorModificador').value;
+
+            // Rota para a API de modificador na API Gateway
+            let url = 'http://localhost:5002/rpg_gateway/rolagem_modificada/';
+            url += '/' + resultadoRolagem + '/' + valorModificador;
+
+            // Faz uma requisição POST usando XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const resultado = JSON.parse(xhr.responseText);
+                    document.getElementById('resultadoModificador').innerText =
+                      `Rolagem modificada: ${resultado.rolagem_modificada}`;
+                }
+                if (xhr.readyState === 4 && xhr.status > 400 && xhr.status < 500) {
+                    document.getElementById('resultadoRolagemDado').innerText =
+                        `parâmentros inválidos: Certifique de que o resultado da rolagem seja maior que 0;\n'
+                            e que o modificador seja maior ou igual a 0.\n`;
+                }
+            };
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
+    </script>
+</body>
+</html>
