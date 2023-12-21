@@ -1,26 +1,49 @@
 <!-- index.html -->
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leilão</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
 </head>
-<body>
-    <h1>Leilão</h1>
+<body class="container">
+    <div class="container">
+        <nav class="navbar bg-body-tertiary">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="#">
+                <img src="logoqajuda.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+                QAjuda Leilão
+              </a>
+            </div>
+          </nav>
+    </div>
     <div id="status"></div>
     <div id="maiorLance"></div>
-    <div>
-        <label for="nome">Seu Nome:</label>
-        <input type="text" id="nome" placeholder="Digite seu nome">
+    <div class="mt-4">
+        <label for="nome" class="form-label">Seu nome:</label>
+        <input class="form-control" type="text" placeholder="Digite seu nome" id="nome" aria-label="default input example">
     </div>
-    <div>
-        <label for="valor">Seu Lance:</label>
-        <input type="number" id="valor" step="0.01" placeholder="Digite seu lance">
-        <button onclick="enviarLance()">Enviar Lance</button>
+    <div class="mt-4">
+        <label for="valor" class="form-label">Informe seu lance:</label>
+        <input class="form-control" type="number" placeholder="Digite seu lance" id="valor" step="100" aria-label="default input example">
     </div>
-    <div id="todosLances"></div>
+    <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-success mt-4" onclick="enviarLance()">Dê seu lance</button>
+    </div>
+
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Lance</th>
+            </tr>
+        </thead>
+        <tbody id="todosLances"></tbody>
+    </table>
+
 
     <script>
         const nomeInput = document.getElementById('nome');
@@ -45,8 +68,18 @@
             maiorLanceElement.innerHTML = maiorLance;
 
             // As linhas restantes contêm todos os lances
-            const todosLances = linhas.slice(1).join('<br>');
-            todosLancesElement.innerHTML = todosLances;
+            const todosLances = linhas.slice(1);
+            todosLancesElement.innerHTML = '';
+            for (const lanceString of todosLances) {
+                const [nome, valor] = lanceString.split(':');
+                const linha = document.createElement('tr');
+                linha.innerHTML = `
+                    <td>${nome}</td>
+                    <td>${valor}</td>
+                `;
+                todosLancesElement.appendChild(linha);
+            }
+            // todosLancesElement.innerHTML = todosLances;
         };
 
         socket.onclose = () => {
@@ -59,21 +92,26 @@
 
         function enviarLance() {
             const nome = nomeInput.value.trim();
-            const valorInputValue = valorInput.value.trim();
+            const valorInputValue = parseFloat(valorInput.value.trim());
             
             if (nome === '') {
                 alert('Por favor, insira seu nome.');
                 return;
             }
 
-            if (!valorInputValue || isNaN(parseFloat(valorInputValue))) {
+            if (isNaN(valorInputValue || valorInputValue <= 0)) {
                 alert('Por favor, insira um valor válido para o lance.');
                 return;
             }
 
-            const mensagem = `${nome}: ${valorInputValue}`;
+            // Formata o valor do lance como moeda brasileira (Real)
+            const valorFormatado = valorInputValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const mensagem = `${nome}: ${valorFormatado}`;
             socket.send(mensagem);
         }
+        
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </body>
 </html>

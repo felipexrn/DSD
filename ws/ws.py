@@ -11,33 +11,37 @@ async def notificar_lances(cliente, nome_usuario):
     else:
         mensagem_maior_lance = f"{nome_usuario}: Nenhum lance até agora."
 
-    #await cliente.send(mensagem_maior_lance)
-
     if lances:
         mensagem_todos_lances = "\n".join([f"{lance['cliente']}: {lance['valor']}" for lance in lances])
         await cliente.send(mensagem_maior_lance + "\n" + mensagem_todos_lances)
+    else:
+        await cliente.send(mensagem_maior_lance)
 
 async def lida_com_cliente(websocket, path):
-    # Adiciona o cliente à lista de clientes
     clientes.add(websocket)
     print(f"Novo cliente conectado {websocket.remote_address}. Total de clientes: {len(clientes)}")
 
-    # Recebe o nome do usuário
     nome_usuario = await websocket.recv()
     nome_usuario = nome_usuario.split(":")[0]
     print(f"Cliente {nome_usuario} conectado.")
 
     try:
         async for mensagem in websocket:
-            # Processa o lance recebido do cliente
-            valor_lance = float(mensagem.split(":")[-1])
-            lance = {"cliente": nome_usuario, "valor": valor_lance}
-            lances.append(lance)
-            print("lance registrado")
+            # Corrige a formatação de moeda antes de converter para float
+            valor_lance_str = mensagem.split(":")[-1].replace(' ', '').replace('R$', '').replace(',', '.')
+            valor_lance = float(valor_lance_str)
 
-            # Notifica todos os clientes sobre o novo lance
-            for cliente in clientes:
-                await notificar_lances(cliente, nome_usuario)
+            # Verifica se o novo lance é maior que o lance anterior
+            if lances and valor_lance <= max(lance["valor"] for lance in lances):
+                await websocket.send("O lance deve ser maior que o lance anterior.")
+            else:
+                lance = {"cliente": nome_usuario, "valor": valor_lance}
+                lances.append(lance)
+                print("Lance registrado")
+
+                # Notifica todos os clientes sobre o novo lance
+                for cliente in clientes:
+                    await notificar_lances(cliente, nome_usuario)
 
     except websockets.ConnectionClosed:
         pass
