@@ -1,0 +1,79 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leilão</title>
+</head>
+<body>
+    <h1>Leilão</h1>
+    <div id="status"></div>
+    <div id="maiorLance"></div>
+    <div>
+        <label for="nome">Seu Nome:</label>
+        <input type="text" id="nome" placeholder="Digite seu nome">
+    </div>
+    <div>
+        <label for="valor">Seu Lance:</label>
+        <input type="number" id="valor" step="0.01" placeholder="Digite seu lance">
+        <button onclick="enviarLance()">Enviar Lance</button>
+    </div>
+    <div id="todosLances"></div>
+
+    <script>
+        const nomeInput = document.getElementById('nome');
+        const valorInput = document.getElementById('valor');
+        const maiorLanceElement = document.getElementById('maiorLance');
+        const todosLancesElement = document.getElementById('todosLances');
+        const statusElement = document.getElementById('status');
+        const socket = new WebSocket('ws://localhost:8765');
+
+        socket.onopen = () => {
+            statusElement.innerHTML = 'Conectado ao servidor ('+socket.url+')';
+        };
+
+        socket.onmessage = (event) => {
+            const mensagem = event.data;
+            
+            // Divide a mensagem em linhas
+            const linhas = mensagem.split('\n');
+
+            // A primeira linha contém o maior lance
+            const maiorLance = linhas[0];
+            maiorLanceElement.innerHTML = maiorLance;
+
+            // As linhas restantes contêm todos os lances
+            const todosLances = linhas.slice(1).join('<br>');
+            todosLancesElement.innerHTML = todosLances;
+        };
+
+        socket.onclose = () => {
+            statusElement.innerHTML = 'Conexão encerrada.';
+        };
+
+        socket.onerror = (error) => {
+            console.error('Erro na conexão WebSocket:', error);
+        };
+
+        function enviarLance() {
+            const nome = nomeInput.value.trim();
+            const valorInputValue = valorInput.value.trim();
+            
+            if (nome === '') {
+                alert('Por favor, insira seu nome.');
+                return;
+            }
+
+            if (!valorInputValue || isNaN(parseFloat(valorInputValue))) {
+                alert('Por favor, insira um valor válido para o lance.');
+                return;
+            }
+
+            const mensagem = `${nome}: ${valorInputValue}`;
+            socket.send(mensagem);
+        }
+    </script>
+</body>
+</html>
