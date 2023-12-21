@@ -14,7 +14,6 @@
         <nav class="navbar bg-body-tertiary">
             <div class="container-fluid">
               <a class="navbar-brand" href="#">
-                <img src="logoqajuda.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
                 QAjuda Leilão
               </a>
             </div>
@@ -28,7 +27,7 @@
     </div>
     <div class="mt-4">
         <label for="valor" class="form-label">Informe seu lance:</label>
-        <input class="form-control" type="number" placeholder="Digite seu lance" id="valor" step="100" aria-label="default input example">
+        <input class="form-control" type="number" placeholder="Digite seu lance" id="valor" step="100" aria-label="default input example" required>
     </div>
     <div class="d-flex justify-content-between">
         <button type="button" class="btn btn-success mt-4" onclick="enviarLance()">Dê seu lance</button>
@@ -51,10 +50,11 @@
         const maiorLanceElement = document.getElementById('maiorLance');
         const todosLancesElement = document.getElementById('todosLances');
         const statusElement = document.getElementById('status');
-        const socket = new WebSocket('ws://localhost:8765');
+        const socket = new WebSocket('ws://192.168.0.7:8765');
 
-        socket.onopen = () => {
-            statusElement.innerHTML = 'Conectado ao servidor ('+socket.url+')';
+        socket.onopen = (event) => {
+            // const mensagemDoServidor = event.data; // Aqui você acessa a mensagem recebida do servidor
+            statusElement.innerHTML = `Conectado ao servidor`;
         };
 
         socket.onmessage = (event) => {
@@ -92,7 +92,7 @@
 
         function enviarLance() {
             const nome = nomeInput.value.trim();
-            const valorInputValue = parseFloat(valorInput.value.trim());
+            const valorInputValue = valorInput.value.trim();
             
             if (nome === '') {
                 alert('Por favor, insira seu nome.');
@@ -105,10 +105,15 @@
             }
 
             // Formata o valor do lance como moeda brasileira (Real)
-            const valorFormatado = valorInputValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            const mensagem = `${nome}: ${valorFormatado}`;
+            const mensagem = `${nome}: ${valorInputValue}`;
             socket.send(mensagem);
+
+            // Reseta o valor do input
+            valorInput.value = '';
+
+            // Volta o foco para o input de valor
+            valorInput.focus();
         }
         
     </script>

@@ -25,6 +25,10 @@ async def lida_com_cliente(websocket, path):
     nome_usuario = nome_usuario.split(":")[0]
     print(f"Cliente {nome_usuario} conectado.")
 
+    # Envia uma mensagem para o cliente assim que a conexão é estabelecida
+    mensagem_inicial = "ITEM LEILOADO SERÁ UM IPHONE 13"
+    await websocket.send(mensagem_inicial)
+
     try:
         async for mensagem in websocket:
             # Corrige a formatação de moeda antes de converter para float
@@ -37,7 +41,7 @@ async def lida_com_cliente(websocket, path):
             else:
                 lance = {"cliente": nome_usuario, "valor": valor_lance}
                 lances.append(lance)
-                print("Lance registrado")
+                print(f"Lance registrado - Cliente: {nome_usuario}, Valor: {valor_lance}")
 
                 # Notifica todos os clientes sobre o novo lance
                 for cliente in clientes:
@@ -53,7 +57,8 @@ async def lida_com_cliente(websocket, path):
 
 async def main():
     # Inicia o servidor WebSocket
-    servidor = await websockets.serve(lida_com_cliente, 'localhost', 8765)
+    # servidor = await websockets.serve(lida_com_cliente, 'localhost', 8765)
+    servidor = await websockets.serve(lida_com_cliente, '192.168.0.7', 8765)
 
     print("Servidor de leilão iniciado. Aguardando conexões...")
 
