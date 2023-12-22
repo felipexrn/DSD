@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardanapo</title>
+</head>
+<body>
+    <h1>Editor de texto compartilhado</h1>
+    <div id="status"></div>
+    <div>
+        <textarea id="editor" rows="10" cols="50" onkeyup="enviaMensagem()"></textarea>
+        <br>
+        <button onclick="salvarComoArquivo()">Salvar como...</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:8765');
+
+        const statusElement = document.getElementById('status');
+
+        // Manipula a abertura da conexão WebSocket
+        socket.addEventListener('open', (event) => {
+            statusElement.innerHTML = 'Conectado ao servidor ('+socket.url+')';
+        });
+
+        // Manipula a recepção de mensagens WebSocket
+        socket.addEventListener('message', (event) => {
+            const editor = document.getElementById('editor');
+            editor.value = event.data;
+        });
+
+        // Função para enviar mensagem ao servidor
+        function enviaMensagem() {
+            const editor = document.getElementById('editor');
+            const message = editor.value;
+            socket.send(message);
+        }
+        
+        // Função para solicitar o nome do arquivo
+        function salvarComoArquivo() {
+            const fileName = prompt('Digite o nome do arquivo (inclua a extensão .txt):');
+            if (fileName) {
+                baixarArquivo(fileName);
+            }
+        }
+
+        // Função para baixar o arquivo
+        function baixarArquivo(fileName) {
+            const editor = document.getElementById('editor');
+            const textToSave = editor.value;
+
+            const blob = new Blob([textToSave], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            a.click();
+        }
+    </script>
+</body>
+</html>
