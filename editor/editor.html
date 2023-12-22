@@ -15,7 +15,7 @@
     </div>
 
     <script>
-        const socket = new WebSocket('ws://localhost:8765');
+        const socket = new WebSocket('ws://10.25.2.30:8765');
 
         const statusElement = document.getElementById('status');
 
@@ -39,7 +39,7 @@
         
         // Função para solicitar o nome do arquivo
         function salvarComoArquivo() {
-            const fileName = prompt('Digite o nome do arquivo (inclua a extensão .txt):');
+            const fileName = prompt('Digite o nome do arquivo (inclua a extensão)');
             if (fileName) {
                 baixarArquivo(fileName);
             }

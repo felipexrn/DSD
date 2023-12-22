@@ -18,7 +18,7 @@ async def server(websocket, path):
         clients.remove(websocket)
 
 # Inicia o servidor WebSocket
-start_server = websockets.serve(server, "localhost", 8765)
+start_server = websockets.serve(server, "10.25.2.30", 8765)
 
 # Executa o loop de eventos
 asyncio.get_event_loop().run_until_complete(start_server)
