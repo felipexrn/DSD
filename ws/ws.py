@@ -69,8 +69,7 @@ async def lida_com_cliente(websocket, path):
 
 async def main():
     # Inicia o servidor WebSocket
-    # servidor = await websockets.serve(lida_com_cliente, 'localhost', 8765)
-    servidor = await websockets.serve(lida_com_cliente, '192.168.0.7', 8765)
+    servidor = await websockets.serve(lida_com_cliente, 'localhost', 8765)
 
     print("Servidor de leilão iniciado. Aguardando conexões...")
 
