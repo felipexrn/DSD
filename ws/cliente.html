@@ -51,7 +51,7 @@
         const maiorLanceElement = document.getElementById('maiorLance');
         const todosLancesElement = document.getElementById('todosLances');
         const statusElement = document.getElementById('status');
-        const socket = new WebSocket('ws://192.168.0.7:8765');
+        const socket = new WebSocket('ws://localhost:8765');
         
         let mensagemInicial = ''
         socket.onopen = (event) => {
