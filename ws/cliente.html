@@ -20,7 +20,8 @@
           </nav>
     </div>
     <div id="status"></div>
-    <div id="maiorLance"></div>
+    <div id="mensagemInicial"></div>
+    <div id="maiorLance" style="color: red"></div>
     <div class="mt-4">
         <label for="nome" class="form-label">Seu nome:</label>
         <input class="form-control" type="text" placeholder="Digite seu nome" id="nome" aria-label="default input example">
@@ -51,10 +52,10 @@
         const todosLancesElement = document.getElementById('todosLances');
         const statusElement = document.getElementById('status');
         const socket = new WebSocket('ws://192.168.0.7:8765');
-
+        
+        let mensagemInicial = ''
         socket.onopen = (event) => {
-            // const mensagemDoServidor = event.data; // Aqui você acessa a mensagem recebida do servidor
-            statusElement.innerHTML = `Conectado ao servidor`;
+            statusElement.innerHTML = 'Conectado ao servidor ('+socket.url+')';
         };
 
         socket.onmessage = (event) => {
@@ -99,7 +100,7 @@
                 return;
             }
 
-            if (isNaN(valorInputValue || valorInputValue <= 0)) {
+            if (isNaN(valorInputValue || valorInputValue <= 0 && valorInputValue < 1000000)) {
                 alert('Por favor, insira um valor válido para o lance.');
                 return;
             }

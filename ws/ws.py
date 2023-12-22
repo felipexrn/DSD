@@ -3,6 +3,8 @@ import websockets
 
 clientes = set()
 lances = []
+vencedor = None
+
 
 async def notificar_lances(cliente, nome_usuario):
     if lances:
@@ -29,6 +31,11 @@ async def lida_com_cliente(websocket, path):
     mensagem_inicial = "ITEM LEILOADO SERÁ UM IPHONE 13"
     await websocket.send(mensagem_inicial)
 
+    # Envia informações sobre os lances anteriores
+    if lances:
+        mensagem_lances_antigos = "\n".join([f"{lance['cliente']}: {lance['valor']}" for lance in lances])
+        await websocket.send("Lances Anteriores:\n" + mensagem_lances_antigos)
+
     try:
         async for mensagem in websocket:
             # Corrige a formatação de moeda antes de converter para float
@@ -37,7 +44,8 @@ async def lida_com_cliente(websocket, path):
 
             # Verifica se o novo lance é maior que o lance anterior
             if lances and valor_lance <= max(lance["valor"] for lance in lances):
-                await websocket.send("O lance deve ser maior que o lance anterior.")
+                maior_lance_atual = max(lances, key=lambda x: x["valor"])
+                await websocket.send(f"O lance deve ser maior que o lance anterior. Maior lance atual: {maior_lance_atual['valor']}")
             else:
                 lance = {"cliente": nome_usuario, "valor": valor_lance}
                 lances.append(lance)
@@ -46,6 +54,8 @@ async def lida_com_cliente(websocket, path):
                 # Notifica todos os clientes sobre o novo lance
                 for cliente in clientes:
                     await notificar_lances(cliente, nome_usuario)
+            if lances:
+                vencedor = max(lances, key=lambda x: x["valor"])
 
     except websockets.ConnectionClosed:
         pass
@@ -54,6 +64,8 @@ async def lida_com_cliente(websocket, path):
         # Remove o cliente da lista quando a conexão é fechada
         clientes.remove(websocket)
         print(f"Cliente {nome_usuario} desconectado. Total de clientes: {len(clientes)}")
+        if vencedor:
+            print(f"O vencedor do leilão é {vencedor['cliente']} com um lance de {vencedor['valor']}")
 
 async def main():
     # Inicia o servidor WebSocket
