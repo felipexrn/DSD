@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nacara Society</title>
+</head>
+<body>
+    <h1>Nacara Society</h1>
+    <div>
+        <p>Assinar tópico</p>
+        <input type="text" id="topicSubscribe" placeholder="Digite seu topico">
+        <button onclick="subscribeTopic()">Assinar</button>
+    </div>
+    <div>
+        <p>Publicar tópico</p>
+        <input type="text" id="topicInput" placeholder="Digite seu topico"><br>
+        <input type="text" id="messageInput" placeholder="Digite sua mensagem">
+        <button onclick="publishMessage()">Publicar</button> 
+    </div>
+    <div><hr></div>
+    <div id="topicosAssinados">Tópicos assinados: </div>
+    <div><hr></div>
+    <div id="historico"></div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+
+    <script>
+        const historicoElement = document.getElementById('historico');
+        const topicSubscribeElement = document.getElementById('topicSubscribe');
+        const topicInputElement = document.getElementById('topicInput');
+        const messageInputElement = document.getElementById('messageInput');
+        let topicosAssinadosElement = document.getElementById('topicosAssinados');
+
+        // Configurações do servidor MQTT
+        let broker = "localhost"; // Endereço do broker Mosquitto
+        let port = 9001;          // Porta para websocket
+        let path = "";            // Caminho vazio na url
+        let clientId = "web-client-" + Math.random().toString(16).substr(2, 8); // nome aleatório para o cliente
+
+        // Cria um cliente MQTT
+        let client = new Paho.MQTT.Client(broker, port, path, clientId);
+
+        // Define os callbacks de conexão
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
+
+        // Conecta ao servidor MQTT
+        client.connect({onSuccess: onConnect,});
+
+        // Callback de conexão bem-sucedida
+        function onConnect() {
+            let status = `Cliente ${clientId} conectado ao servidor MQTT em ${broker}:${port}`;
+            console.log(status);
+            historicoElement.innerHTML = status;
+            topicSubscribeElement.focus();
+        }
+
+        // Callback de perda de conexão
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("Conexão perdida: " + responseObject.errorMessage);
+            }
+        }
+
+        // Callback de chegada de mensagem
+        function onMessageArrived(message) {
+            const topico = message.destinationName;
+            const conteudo = message.payloadString;
+
+            // Obtém a hora atual
+            const dataAtual = new Date();
+            const diaAtual = dataAtual.getDate();
+            const mesAtual = dataAtual.getMonth() + 1; // Mês começa do zero, então adicionamos 1
+            const anoAtual = dataAtual.getFullYear();
+            const horaAtual = dataAtual.getHours();
+            const minutoAtual = dataAtual.getMinutes();
+            const segundoAtual = dataAtual.getSeconds();
+            const dataFormatada = `${diaAtual.toString().padStart(2, '0')}/${mesAtual.toString().padStart(2, '0')}/${anoAtual}`;
+            const horaFormatada = `${horaAtual.toString().padStart(2, '0')}:${minutoAtual.toString().padStart(2, '0')}:${segundoAtual.toString().padStart(2, '0')}`;
+
+            historicoElement.innerHTML = `${dataFormatada} ${horaFormatada} ${topico}: ${conteudo}<br>${historicoElement.innerHTML}`;
+            console.log(`Mensagem recebida no tópico '${dataFormatada} ${horaFormatada} ${topico}': ${conteudo}`);
+        }
+
+        // Função para assinar um tópico
+        function subscribeTopic() {
+            const topico = document.getElementById("topicSubscribe").value;
+
+            client.subscribe(topico);  // Assina tópico desejado
+            historicoElement.innerHTML = `tópico ${topico} assinado <br>${historicoElement.innerHTML}`;
+            topicSubscribeElement.value = "";
+
+            // Adicione o tópico à lista
+            let topicosAssinados = JSON.parse(sessionStorage.getItem('topicosAssinados')) || [];
+            if (!topicosAssinados.includes(topico)) {
+                topicosAssinados.push(topico);
+                sessionStorage.setItem('topicosAssinados', JSON.stringify(topicosAssinados));
+                topicosAssinadosElement.innerHTML = topicosAssinadosElement.innerHTML + topico + ", ";
+            }
+        }
+
+        // Função para publicar uma mensagem
+        function publishMessage() {
+            const topico = document.getElementById("topicInput").value;
+            const conteudo = document.getElementById("messageInput").value;
+            var mqttMessage = new Paho.MQTT.Message(conteudo);
+            mqttMessage.destinationName = topico;
+            client.send(mqttMessage);
+            messageInputElement.value = "";
+            console.log(`Mensagem enviada no tópico '${topico}': ${conteudo}`);
+            
+        }
+
+        // Assina tópico e muda foco para o campo de tópico da publicação
+        document.getElementById("topicSubscribe").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                subscribeTopic();
+                topicInputElement.focus();
+            }
+        });
+
+        // Mudar foco de componente
+        document.getElementById("topicInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                messageInputElement.focus();
+            }
+        });
+        
+        // Adicione a função de publicação na tecla Enter no campo do conteúdo da publicação
+        document.getElementById("messageInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                publishMessage();
+            }
+        });
+    </script>
+</body>
+</html>
